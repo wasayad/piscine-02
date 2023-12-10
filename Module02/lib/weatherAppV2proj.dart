@@ -1,70 +1,87 @@
-
-
 import 'package:flutter/material.dart';
-import './component/bottomBar.dart';
-import './component/appBar.dart';
-import './component/view/currently.dart';
-import './component/view/today.dart';
-import './component/view/weekly.dart';
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// Flutter code sample for [FutureBuilder].
 
+void main() => runApp(const FutureBuilderExampleApp());
 
-  // This widget is the root of your application.
+class FutureBuilderExampleApp extends StatelessWidget {
+  const FutureBuilderExampleApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return const MaterialApp(
+      home: FutureBuilderExample(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class FutureBuilderExample extends StatefulWidget {
+  const FutureBuilderExample({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<FutureBuilderExample> createState() => _FutureBuilderExampleState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-
-  String localisation = "";
-
-  void onLocalisationChange(String value) {
-    setState(() {
-      localisation = value;
-    });
-  }
-
+class _FutureBuilderExampleState extends State<FutureBuilderExample> {
+  final Future<String> _calculation = Future<String>.delayed(
+    const Duration(seconds: 2),
+        () => 'Data Loaded',
+  );
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        initialIndex: 1,
-        length: 3,
-
-        child: Scaffold(
-          appBar: AppBarComponent(searchText: localisation, onChanged: onLocalisationChange),
-            body: TabBarView(
-              children: <Widget>[
-                Currently(localisation: localisation),
-                Today(localisation: localisation),
-                Weekly(localisation: localisation),
-              ],
+    return DefaultTextStyle(
+      style: Theme.of(context).textTheme.displayMedium!,
+      textAlign: TextAlign.center,
+      child: FutureBuilder<String>(
+        future: _calculation, // a previously-obtained Future<String> or null
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          List<Widget> children;
+          if (snapshot.hasData) {
+            children = <Widget>[
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Result: ${snapshot.data}'),
+              ),
+            ];
+          } else if (snapshot.hasError) {
+            children = <Widget>[
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              ),
+            ];
+          } else {
+            children = const <Widget>[
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Awaiting result...'),
+              ),
+            ];
+          }
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: children,
             ),
-          bottomNavigationBar: const BottomBar(),
-        ), // This trailing comma makes auto-formatting nicer for build methods.
+          );
+        },
+      ),
     );
   }
 }
